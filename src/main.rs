@@ -43,16 +43,20 @@ const WHEEL: [u32; 8] = [1, 7, 11, 13, 17, 19, 23, 29];
 
 // Map remainder mod 30 -> index into WHEEL (-1 means not a candidate).
 const MAP30: [i8; 30] = [
-    -1, 0, -1, -1, -1, -1, -1, 1,   // 1->0, 7->1
-    -1, -1, -1, 2, -1, 3, -1, -1,   // 11->2, 13->3
-    -1, 4, -1, 5, -1, -1, -1, 6,    // 17->4, 19->5, 23->6
-    -1, -1, -1, -1, -1, 7           // 29->7
+    -1, 0, -1, -1, -1, -1, -1, 1, // 1->0, 7->1
+    -1, -1, -1, 2, -1, 3, -1, -1, // 11->2, 13->3
+    -1, 4, -1, 5, -1, -1, -1, 6, // 17->4, 19->5, 23->6
+    -1, -1, -1, -1, -1, 7, // 29->7
 ];
 
 #[inline]
 fn wheel_index(r: u32) -> Option<usize> {
     let v = MAP30[(r % 30) as usize];
-    if v >= 0 { Some(v as usize) } else { None }
+    if v >= 0 {
+        Some(v as usize)
+    } else {
+        None
+    }
 }
 
 // Basic sieve up to `limit`, used to generate base primes <= sqrt(n).
@@ -93,30 +97,42 @@ fn main() -> std::io::Result<()> {
     //  - n:    upper bound (default: 1e9)
     //  - step: interval for writing π(x) to pi_index.bin (default: 1e6)
     let mut args = std::env::args().skip(1);
-    let n: u64 = args.next().and_then(|s| s.parse().ok()).unwrap_or(1_000_000_000);
-    let step: u64 = args.next().and_then(|s| s.parse().ok()).unwrap_or(1_000_000);
+    let n: u64 = args
+        .next()
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(1_000_000_000);
+    let step: u64 = args
+        .next()
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(1_000_000);
     // ----------------------------------
 
     assert_eq!(SEGMENT % 30, 0, "SEGMENT must be divisible by 30");
 
     let t0 = Instant::now();
     let base_primes = simple_sieve((n as f64).sqrt() as u32 + 1);
-    eprintln!("Base primes ready: {} in {:?}", base_primes.len(), t0.elapsed());
+    eprintln!(
+        "Base primes ready: {} in {:?}",
+        base_primes.len(),
+        t0.elapsed()
+    );
 
     // Outputs
     let mut primes_out = BufWriter::new(File::create("primes.bin")?);
-    let mut pi_out     = BufWriter::new(File::create("pi_index.bin")?);
-    let mut bits_out   = BufWriter::new(File::create("sieve_w30.bitset")?);
-    let mut meta       = BufWriter::new(File::create("meta.txt")?);
+    let mut pi_out = BufWriter::new(File::create("pi_index.bin")?);
+    let mut bits_out = BufWriter::new(File::create("sieve_w30.bitset")?);
+    let mut meta = BufWriter::new(File::create("meta.txt")?);
 
     // Bitset header: magic, version, n, total_blocks, flags, wheel residues
     let total_blocks: u64 = ((n + 1) + 29) / 30; // ceil((n+1)/30)
     bits_out.write_all(b"W30BIT\0")?;
-    bits_out.write_all(&1u32.to_le_bytes())?;            // version
+    bits_out.write_all(&1u32.to_le_bytes())?; // version
     bits_out.write_all(&n.to_le_bytes())?;
     bits_out.write_all(&total_blocks.to_le_bytes())?;
-    bits_out.write_all(&1u8.to_le_bytes())?;             // flags: bit0=1 => '1' means composite
-    for &r in &WHEEL { bits_out.write_all(&(r as u8).to_le_bytes())?; }
+    bits_out.write_all(&1u8.to_le_bytes())?; // flags: bit0=1 => '1' means composite
+    for &r in &WHEEL {
+        bits_out.write_all(&(r as u8).to_le_bytes())?;
+    }
 
     // Meta header
     writeln!(meta, "n={}", n)?;
@@ -127,11 +143,11 @@ fn main() -> std::io::Result<()> {
 
     // Reference checkpoints for validation
     let checkpoints: &[(u64, u64)] = &[
-        (1_000_000,      78_498),
-        (10_000_000,    664_579),
-        (100_000_000,  5_761_455),
+        (1_000_000, 78_498),
+        (10_000_000, 664_579),
+        (100_000_000, 5_761_455),
         (1_000_000_000, 50_847_534),
-        (10_000_000_000,455_052_511),
+        (10_000_000_000, 455_052_511),
     ];
     let mut next_test_idx = 0usize;
     let mut pi_count: u64 = 0;
@@ -164,10 +180,14 @@ fn main() -> std::io::Result<()> {
 
         // Cross off composites using base primes >= 7
         for &p in &base_primes {
-            if p <= 5 { continue; }
+            if p <= 5 {
+                continue;
+            }
             let p64 = p as u64;
             let mut j = (low + p64 - 1) / p64 * p64;
-            if j < p64 * p64 { j = p64 * p64; }
+            if j < p64 * p64 {
+                j = p64 * p64;
+            }
             while j < high {
                 if let Some(idx) = wheel_index((j % 30) as u32) {
                     let b = ((j - low) / 30) as usize;
@@ -179,7 +199,7 @@ fn main() -> std::io::Result<()> {
 
         // Write bitset bytes for this segment
         if remainder > 0 {
-            bits_out.write_all(&mark)?;                  // include tail block
+            bits_out.write_all(&mark)?; // include tail block
         } else {
             bits_out.write_all(&mark[..blocks as usize])?;
         }
@@ -190,7 +210,9 @@ fn main() -> std::io::Result<()> {
             let m = mark[b];
             for (idx, &r) in WHEEL.iter().enumerate() {
                 let x = base + r as u64;
-                if x > n { break; }
+                if x > n {
+                    break;
+                }
 
                 // Checkpoint before counting x
                 while next_test_idx < checkpoints.len()
@@ -221,7 +243,9 @@ fn main() -> std::io::Result<()> {
             let m = mark[blocks as usize];
             for (idx, &r) in WHEEL.iter().enumerate() {
                 let x = base + r as u64;
-                if x >= high || x > n { break; }
+                if x >= high || x > n {
+                    break;
+                }
 
                 while next_test_idx < checkpoints.len()
                     && checkpoints[next_test_idx].0 < x
@@ -248,20 +272,37 @@ fn main() -> std::io::Result<()> {
         // Per-segment progress (to meta and stderr)
         let elapsed = t0.elapsed();
         let done_ratio = (seg_idx as f64) / (total_segments as f64);
-        let est_total = if done_ratio > 0.0 { elapsed.mul_f64(1.0 / done_ratio) } else { elapsed };
-        let eta = if est_total > elapsed { est_total - elapsed } else { Duration::from_secs(0) };
+        let est_total = if done_ratio > 0.0 {
+            elapsed.mul_f64(1.0 / done_ratio)
+        } else {
+            elapsed
+        };
+        let eta = if est_total > elapsed {
+            est_total - elapsed
+        } else {
+            Duration::from_secs(0)
+        };
         let percent = 100.0 * done_ratio;
 
         writeln!(
             meta,
             "progress: {:>6.2}% ({}..{}) pi_count={} elapsed={} ETA={}",
-            percent, low, high, pi_count, format_duration(elapsed), format_duration(eta)
+            percent,
+            low,
+            high,
+            pi_count,
+            format_duration(elapsed),
+            format_duration(eta)
         )?;
 
         if seg_idx % 10 == 0 || low + SEGMENT as u64 >= n {
             eprintln!(
                 "progress: {}/{} ({:.2}%) | elapsed={} | ETA={}",
-                seg_idx, total_segments, percent, format_duration(elapsed), format_duration(eta)
+                seg_idx,
+                total_segments,
+                percent,
+                format_duration(elapsed),
+                format_duration(eta)
             );
         }
 

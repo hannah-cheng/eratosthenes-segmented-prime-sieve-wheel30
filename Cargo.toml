@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 authors = ["Hannah Cheng <> (GitHub: hannah-cheng)"]
 license = "MIT"
-description = "A high-performance implementation of the Segmented Sieve of Eratosthenes with Wheel-30 optimization, designed for large-scale prime counting experiments in computational number theory (verified up to 1e11 and potentially scalable to 1e12). Intended for academic research and reproducibility."
+description = "A segmented Sieve of Eratosthenes with Wheel-30 candidate filtering for reproducible prime-enumeration experiments."
 repository = "https://github.com/hannah-cheng/eratosthenes-segmented-prime-sieve-wheel30"
 readme = "README.md"
 
