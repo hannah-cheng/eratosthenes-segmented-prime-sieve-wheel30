@@ -1,11 +1,8 @@
 # Segmented Sieve of Eratosthenes with Wheel-30 Optimization
 
-This repository provides an implementation of the segmented Sieve of Eratosthenes enhanced with Wheel-30 optimization.  
-The algorithm is designed for large-scale prime enumeration and prime-counting experiments, verified up to 1e11 and  
-potentially scalable to 1e12.  
+This repository provides an implementation of the segmented Sieve of Eratosthenes enhanced with Wheel-30 optimization. The algorithm is designed for large-scale prime enumeration and prime-counting experiments, verified up to 1e11 and potentially scalable to 1e12.  
 
-It is intended for reproducibility in computational number theory research, offering a clear reference implementation  
-that balances correctness, memory efficiency, and scalability.
+It is intended for reproducibility in computational number theory research, offering a clear reference implementation that balances correctness, memory efficiency, and scalability.
 
 ---
 
