@@ -2,7 +2,7 @@
 name = "prime-sieve-w30"
 version = "0.1.0"
 edition = "2021"
-authors = ["Hannah Cheng <> (GitHub: hannah-cheng)"]
+authors = ["Hannah Cheng (GitHub: hannah-cheng)"]
 license = "MIT"
 description = "A segmented Sieve of Eratosthenes with Wheel-30 candidate filtering for reproducible prime-enumeration experiments."
 repository = "https://github.com/hannah-cheng/eratosthenes-segmented-prime-sieve-wheel30"
